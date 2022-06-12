@@ -8,7 +8,8 @@
 }
 
 body{
-    position: relative;
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
 }
 
@@ -25,12 +26,13 @@ body{
 
 .main{
     width: 100%;
-    height: 100%;
     background-color: #F0F3BD;
+    flex: 1;
 }
 
 .container{
     width: 90%;
+    height: 100%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -52,11 +54,64 @@ body{
     width: 60%;
     padding: .4rem;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 2px solid #00afb9;
+    background-color: #FEEBCA;
+    color: #f07167;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.main__weatherbox__city{
+    background-color: #05668d;
+    color: #fff;
+    padding: 1.5rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+    border-radius: 5px;
+    position: relative;
+}
+
+.main__weatherbox__city__name{
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.main__weatherbox__city__temperature{
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.main__weatherbox__city__weather{
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+.main__weatherbox__city__tempbox{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.close{
+    font-size: 1.5rem;
+    font-weight: 700;
+    position: absolute;
+    top: .3rem;
+    right: .6rem;
 }
 
 #search{
     padding: .3rem 1rem;
+    background-color: #F7A58F;
+    border-radius: 5px;
+    border: 3px solid #00afb9;
+    color: #00afb9;
+    font-size: 1.2rem;
+    cursor: pointer;
 }
 
 .footer{
@@ -67,8 +122,7 @@ body{
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
-    bottom: 0;
+    margin-top: auto;
 }
 
 .footer__content{
