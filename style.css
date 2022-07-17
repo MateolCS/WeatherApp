@@ -61,47 +61,37 @@ body{
     font-size: 1.2rem;
 }
 
-.main__weatherbox__city{
-    background-color: #05668d;
-    color: #fff;
-    padding: 1.5rem 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-    border-radius: 5px;
-    position: relative;
-}
-
-.main__weatherbox__city__name{
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-.main__weatherbox__city__temperature{
-    font-size: 1.2rem;
-    font-weight: 500;
-}
-
-.main__weatherbox__city__weather{
-    font-size: 2rem;
-    font-weight: 500;
-}
-
-.main__weatherbox__city__tempbox{
+.recent__searches{
+    display: grid;
     width: 100%;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 1rem;
+}
+
+.recent__search{
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 1rem;
+    justify-content: space-between;
+    border: 3px solid #05668d;
+    border-radius: 10px;
+    padding: .5rem;
+    background-color: #00afb9;
+    color: #fff;
 }
 
-.close{
-    font-size: 1.5rem;
-    font-weight: 700;
-    position: absolute;
-    top: .3rem;
-    right: .6rem;
+.recent__search__close{
+    cursor: pointer;
+    color: #fff;
+    font-size: 1.2rem;
+}
+
+.recent__search__title{
+    font-size: 1.2rem;
+    margin: auto;
+}
+
+.recent__search__title:hover{
+    color: #F7A58F;
     cursor: pointer;
 }
 
