@@ -13,7 +13,7 @@ const formatData = async (data) => {
 }
 
 const search = async (keywoard) => {
-    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${keywoard}&appid=${API_KEY}`
+    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${keywoard}&units=metric&appid=${API_KEY}`
     try{
         const response = await fetch(endpoint, {mode: 'cors'})
         const data = await response.json()
@@ -34,7 +34,8 @@ searchButton.addEventListener('click', async () => {
     const data = await search(keywoard)
     const result = new Search(data)
     console.log(result)
-    clearSearch() 
+    clearSearch()
+    UI.displaySearch(result)
 })
 
 class Search {
@@ -118,8 +119,37 @@ class Storage{
         searches.addSearch(keywoard)
         Storage.setSearches(searches)
     }
+}
 
+class UI{
+    static displaySearch(search){
+        const possibleIcons = {
+            'Thunderstorm': 'fa-cloud-bolt',
+            'Drizzle': 'fa-cloud-drizzle',
+            'Rain': 'fa-cloud-rain',
+            'Snow': 'fa-cloud-snow',
+            'Atmosphere': 'fa-cloud-fog',
+            'Clear': 'fa-sun',
+            'Clouds': 'fa-cloud'
+        }
 
+        const weatherContainer = document.querySelector('#weather-container')
+        const weeatherTitle = document.querySelector('#city-name')
+        const weatherTemperature = document.querySelector('#temperature')
+        const weatherFeelsLike = document.querySelector('#feels-like')
+        const weatherIcon = document.querySelector('#weather-icon')
+
+        const icon = document.createElement('i')
+        icon.classList.add('fa-solid', possibleIcons[search.getWeather()])
+
+        weeatherTitle.textContent = search.getName()
+        weatherTemperature.textContent = `${search.getTemperature()}°C`
+        weatherFeelsLike.textContent = `${search.getFeelsLike()}°C`
+        weatherIcon.innerHTML = ''
+        weatherIcon.appendChild(icon)
+        weatherContainer.classList.remove('hidden')
+
+    }
 }
 
 const recents = ['Poznań', 'Junoszyno', 'Warszawa', 'Radom', 'Gdynia', 'Powidz']
