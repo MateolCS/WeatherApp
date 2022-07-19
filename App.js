@@ -100,7 +100,11 @@ class RecentSearches {
     }
 
     alreadySerched(keywoard){
-        return this.recentSearches.some(search => search === keywoard)
+        return this.recentSearches.some((search) => search.getName() === keywoard)
+    }
+
+    deleteSearch(keywoard){
+        this.recentSearches = this.recentSearches.filter((search) => search.getName() !== keywoard)
     }
 }
 
@@ -119,6 +123,12 @@ class Storage{
     static setSearch(keywoard){
         const searches = Storage.getSearches()
         searches.addSearch(keywoard)
+        Storage.setSearches(searches)
+    }
+
+    static deleteSearch(keywoard){
+        const searches = Storage.getSearches()
+        searches.deleteSearch(keywoard)
         Storage.setSearches(searches)
     }
 }
@@ -161,7 +171,22 @@ class UI{
         searches.forEach((search) =>{
             searchesContainer.appendChild(drawSearch(search))
         })
+    }
 
+    static displaySearch(search){
+        const searchesContainer = document.querySelector('#recent-searches')
+        searchesContainer.appendChild(drawSearch(search))
+    }
+
+    static deleteSearchEvent(){
+        const deleteSearches = document.querySelectorAll('.recent__search__close')
+        deleteSearches.forEach((deleteSearch) => {
+            deleteSearch.addEventListener('click', (e) =>{
+                const name = e.target.parentElement.firstChild.textContent
+                Storage.deleteSearch(name)
+                e.target.parentElement.remove()
+            })
+        })
     }
 }
 
@@ -186,6 +211,8 @@ const search1 = new Search({ cityName: "Junoszyno", weather: "Clear", temperatur
 const search2 = new Search({ cityName: "Poznań", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
 const search3 = new Search({ cityName: "Warszawa", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
 const test = new RecentSearches([search1, search2, search3])
-Storage.setSearches(test)
+//Storage.setSearches(test)
 
 UI.displaySearches()
+UI.deleteSearchEvent()
+console.log(Storage.getSearches())
