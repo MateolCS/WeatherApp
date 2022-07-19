@@ -81,6 +81,7 @@ class RecentSearches {
         this.recentSearches = data
     }
 
+
     addSearch(keywoard){
         if(!this.alreadySerched(keywoard)){
             if(this.recentSearches.length >= 6){
@@ -111,6 +112,7 @@ class Storage{
 
     static getSearches(){
         const searches = Object.assign(new RecentSearches,JSON.parse(localStorage.getItem('searches')))
+        searches.setSearches(searches.getRecentSearches().map((search) => Object.assign(new Search, search)))
         return searches
     }
 
@@ -148,14 +150,42 @@ class UI{
         weatherIcon.innerHTML = ''
         weatherIcon.appendChild(icon)
         weatherContainer.classList.remove('hidden')
+    }
+
+    static displaySearches(){
+        const searchesContainer = document.querySelector('#recent-searches')
+        searchesContainer.innerHTML = ''
+        
+        const searches = Storage.getSearches().getRecentSearches()
+        console.log(searches)
+        searches.forEach((search) =>{
+            searchesContainer.appendChild(drawSearch(search))
+        })
 
     }
 }
 
-const recents = ['Poznań', 'Junoszyno', 'Warszawa', 'Radom', 'Gdynia', 'Powidz']
-const test = new RecentSearches(recents)
-console.log(test.getRecentSearches())
-test.addSearch('Wilno')
-console.log(test.getRecentSearches())
-test.addSearch('Szczytniki')
-console.log(test.getRecentSearches())
+const drawSearch = (inSearch) => {
+    const search = document.createElement('div')
+    search.classList.add('recent__search')
+
+    const searchTitle = document.createElement('h3')
+    searchTitle.classList.add('recent__search__title')
+    searchTitle.textContent = inSearch.getName()
+
+    const searchClose = document.createElement('i')
+    searchClose.classList.add('fa-solid', 'fa-xmark' , 'recent__search__close')
+
+    search.appendChild(searchTitle)
+    search.appendChild(searchClose)
+
+    return search
+}
+
+const search1 = new Search({ cityName: "Junoszyno", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
+const search2 = new Search({ cityName: "Poznań", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
+const search3 = new Search({ cityName: "Warszawa", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
+const test = new RecentSearches([search1, search2, search3])
+Storage.setSearches(test)
+
+UI.displaySearches()
