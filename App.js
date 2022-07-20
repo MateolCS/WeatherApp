@@ -87,7 +87,6 @@ class RecentSearches {
         this.recentSearches = data
     }
 
-
     addSearch(keywoard){
         if(!this.alreadySerched(keywoard)){
             if(this.recentSearches.length >= 6){
@@ -235,3 +234,8 @@ const test = new RecentSearches([search1, search2, search3])
 //Storage.setSearches(test)
 
 UI.initialize()
+
+const day = new Date()
+const date = `${day.getDate()}-${day.getMonth() + 1}-${day.getFullYear()}`
+const data2 = '23-7-2022'
+console.log(date)
