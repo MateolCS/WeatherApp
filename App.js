@@ -40,9 +40,15 @@ searchButton.addEventListener('click', async () => {
 
 class Search {
     data = null
+    day = null
 
-    constructor(data){
+    constructor(data, day){
         this.data = data
+        this.day = day
+    }
+
+    getDay(){
+        return this.day
     }
 
     getName(){
@@ -134,7 +140,13 @@ class Storage{
 }
 
 class UI{
-    static displaySearch(search){
+
+    static initialize(){
+        UI.displaySearches()
+        UI.deleteSearchEvent()
+    }
+
+    static displayWeather(search){
         const possibleIcons = {
             'Thunderstorm': 'fa-cloud-bolt',
             'Drizzle': 'fa-cloud-drizzle',
@@ -167,7 +179,6 @@ class UI{
         searchesContainer.innerHTML = ''
         
         const searches = Storage.getSearches().getRecentSearches()
-        console.log(searches)
         searches.forEach((search) =>{
             searchesContainer.appendChild(drawSearch(search))
         })
@@ -186,6 +197,16 @@ class UI{
                 Storage.deleteSearch(name)
                 e.target.parentElement.remove()
             })
+        })
+    }
+
+    static newSearchDeleteEvent(){
+        const deleteSearches = document.querySelectorAll('.recent__search__close')
+        const newSearch = deleteSearches[deleteSearches.length - 1]
+        newSearch.addEventListener('click', (e) =>{
+            const name = e.target.parentElement.firstChild.textContent
+            Storage.deleteSearch(name)
+            e.target.parentElement.remove()
         })
     }
 }
@@ -213,6 +234,4 @@ const search3 = new Search({ cityName: "Warszawa", weather: "Clear", temperature
 const test = new RecentSearches([search1, search2, search3])
 //Storage.setSearches(test)
 
-UI.displaySearches()
-UI.deleteSearchEvent()
-console.log(Storage.getSearches())
+UI.initialize()
