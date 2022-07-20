@@ -3,6 +3,8 @@ const searchButton = document.querySelector('#search')
 
 const API_KEY = 'cf16fe3bca02efc84a2c2b0fee237e66'
 
+//Helper functions
+
 const formatData = async (data) => {
     const cityName = data.name
     const weather = data.weather[0].main
@@ -12,7 +14,7 @@ const formatData = async (data) => {
     return {cityName, weather, temperature, feelsLike}
 }
 
-const search = async (keywoard) => {
+const fetchData = async (keywoard) => {
     const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${keywoard}&units=metric&appid=${API_KEY}`
     try{
         const response = await fetch(endpoint, {mode: 'cors'})
@@ -29,14 +31,64 @@ const clearSearch = () => {
     inputKeywoard.value = ''
 }
 
-searchButton.addEventListener('click', async () => {
+const getDateFormatted = () =>{
+    const day = new Date()
+    const date = `${day.getDate()}-${day.getMonth() + 1}-${day.getFullYear()}`
+
+    return date
+}
+
+const drawSearch = (inSearch) => {
+    const search = document.createElement('div')
+    search.classList.add('recent__search')
+
+    const searchTitle = document.createElement('h3')
+    searchTitle.classList.add('recent__search__title')
+    searchTitle.textContent = inSearch.getName()
+
+    const searchClose = document.createElement('i')
+    searchClose.classList.add('fa-solid', 'fa-xmark' , 'recent__search__close')
+
+    search.appendChild(searchTitle)
+    search.appendChild(searchClose)
+
+    return search
+}
+
+//Search button event
+
+searchButton.addEventListener('click', async (e) => {
     const keywoard = inputKeywoard.value
-    const data = await search(keywoard)
-    const result = new Search(data)
-    console.log(result)
-    clearSearch()
-    UI.displaySearch(result)
+    if(Storage.alreadySerched(keywoard)){
+        if(Storage.getSearch(keywoard).getDay() !== getDateFormatted()){
+            try{
+                const data = new Search(await fetchData(keywoard),getDateFormatted())
+                Storage.updateSearch(keywoard, data)
+                UI.displayWeather(data)
+                clearSearch()
+            }catch(err){
+                console.log(err)
+            }  
+        }else{
+            UI.displayWeather(Storage.getSearch(keywoard))
+            clearSearch()
+        }
+    }else{
+        try{
+            const data = new Search(await fetchData(keywoard), getDateFormatted())
+            Storage.setSearch(data)
+            UI.displaySearch(data)
+            UI.newSearchDeleteEvent()
+            UI.displayWeather(data)
+            clearSearch()
+        }catch(err){
+            console.log(err)
+        }
+    }
 })
+
+// Search class definition
+
 
 class Search {
     data = null
@@ -70,8 +122,14 @@ class Search {
     getData(){
         return this.data
     }
+
+    updateSearch(search){
+        this.data = search.getData()
+        this.day = search.getDay()
+    }
 }
 
+//Recent searches class definition
 
 class RecentSearches {
     recentSearches = []
@@ -87,13 +145,13 @@ class RecentSearches {
         this.recentSearches = data
     }
 
-    addSearch(keywoard){
-        if(!this.alreadySerched(keywoard)){
+    addSearch(inSearch){
+        if(!this.alreadySerched(inSearch.getName())){
             if(this.recentSearches.length >= 6){
                 this.recentSearches.shift()
-                this.recentSearches.push(keywoard)
+                this.recentSearches.push(inSearch)
             }else{
-                this.recentSearches.push(keywoard)
+                this.recentSearches.push(inSearch)
             }
         }else{
             return null
@@ -111,7 +169,14 @@ class RecentSearches {
     deleteSearch(keywoard){
         this.recentSearches = this.recentSearches.filter((search) => search.getName() !== keywoard)
     }
+
+    getSearch(keywoard){
+        return this.recentSearches.find((search) => search.getName() === keywoard)
+    }
+
 }
+
+//Storage class definition
 
 class Storage{
 
@@ -122,6 +187,7 @@ class Storage{
     static getSearches(){
         const searches = Object.assign(new RecentSearches,JSON.parse(localStorage.getItem('searches')))
         searches.setSearches(searches.getRecentSearches().map((search) => Object.assign(new Search, search)))
+
         return searches
     }
 
@@ -136,16 +202,35 @@ class Storage{
         searches.deleteSearch(keywoard)
         Storage.setSearches(searches)
     }
+
+    static alreadySerched(keywoard){
+        const searches = Storage.getSearches()
+        return searches.alreadySerched(keywoard)
+    }
+
+    static getSearch(keywoard){
+        const searches = Storage.getSearches()
+        return searches.getSearch(keywoard)
+    }
+
+    static updateSearch(keywoard, inSearche){
+        const searches = Storage.getSearches()
+        searches.getSearch(keywoard).updateSearch(inSearche)
+        Storage.setSearches(searches)
+    }
 }
+
+//UI class definition
 
 class UI{
 
     static initialize(){
         UI.displaySearches()
         UI.deleteSearchEvent()
+        UI.searchEvent()
     }
 
-    static displayWeather(search){
+    static displayWeather(inSearch){
         const possibleIcons = {
             'Thunderstorm': 'fa-cloud-bolt',
             'Drizzle': 'fa-cloud-drizzle',
@@ -163,11 +248,11 @@ class UI{
         const weatherIcon = document.querySelector('#weather-icon')
 
         const icon = document.createElement('i')
-        icon.classList.add('fa-solid', possibleIcons[search.getWeather()])
+        icon.classList.add('fa-solid', possibleIcons[inSearch.getWeather()])
 
-        weeatherTitle.textContent = search.getName()
-        weatherTemperature.textContent = `${search.getTemperature()}°C`
-        weatherFeelsLike.textContent = `${search.getFeelsLike()}°C`
+        weeatherTitle.textContent = inSearch.getName()
+        weatherTemperature.textContent = `${inSearch.getTemperature()}°C`
+        weatherFeelsLike.textContent = `${inSearch.getFeelsLike()}°C`
         weatherIcon.innerHTML = ''
         weatherIcon.appendChild(icon)
         weatherContainer.classList.remove('hidden')
@@ -195,6 +280,7 @@ class UI{
                 const name = e.target.parentElement.firstChild.textContent
                 Storage.deleteSearch(name)
                 e.target.parentElement.remove()
+                this.clearWeather()
             })
         })
     }
@@ -206,36 +292,38 @@ class UI{
             const name = e.target.parentElement.firstChild.textContent
             Storage.deleteSearch(name)
             e.target.parentElement.remove()
+            this.clearWeather()
         })
+    }
+
+    static searchEvent(){
+        const searches = document.querySelectorAll('.recent__search')
+        searches.forEach((search) => {
+            search.addEventListener('click', async (e) =>{
+                const name = e.target.firstChild.textContent
+                const data = Storage.getSearch(name)
+                if(data.getDay() !== getDateFormatted()){
+                    try{
+                        const data = new Search(await fetchData(name),getDateFormatted())
+                        Storage.updateSearch(name, data)
+                        UI.displayWeather(Storage.getSearch(name))
+                    }catch(err){
+                        console.log(err)
+                    }
+                }else{
+                    UI.displayWeather(data)
+                }
+            })
+        })
+    }
+
+    static clearWeather(){
+        const weatherContainer = document.querySelector('#weather-container')
+        weatherContainer.classList.add('hidden')
     }
 }
 
-const drawSearch = (inSearch) => {
-    const search = document.createElement('div')
-    search.classList.add('recent__search')
-
-    const searchTitle = document.createElement('h3')
-    searchTitle.classList.add('recent__search__title')
-    searchTitle.textContent = inSearch.getName()
-
-    const searchClose = document.createElement('i')
-    searchClose.classList.add('fa-solid', 'fa-xmark' , 'recent__search__close')
-
-    search.appendChild(searchTitle)
-    search.appendChild(searchClose)
-
-    return search
-}
-
-const search1 = new Search({ cityName: "Junoszyno", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
-const search2 = new Search({ cityName: "Poznań", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
-const search3 = new Search({ cityName: "Warszawa", weather: "Clear", temperature: 27.06, feelsLike: 27.06 })
-const test = new RecentSearches([search1, search2, search3])
-//Storage.setSearches(test)
+//UI initialization
 
 UI.initialize()
 
-const day = new Date()
-const date = `${day.getDate()}-${day.getMonth() + 1}-${day.getFullYear()}`
-const data2 = '23-7-2022'
-console.log(date)
